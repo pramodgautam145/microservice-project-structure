@@ -1,0 +1,93 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: microservice-app
+  name: microservice-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: microservice-app
+  template:
+    metadata:
+      labels:
+        app: microservice-app
+    spec:
+      containers:
+      - image: pramodgautam145/microservicedb
+        name: microservice-app
+        ports:
+        - containerPort: 8093
+        env:
+        - name: SPRING_DATA_MONGODB_URI
+          value: "mongodb://mongodb-service.default.svc.cluster.local:27017/dummy_db"
+          #- name: SPRING_DATA_MONGODB_USERNAME
+          #value: "admin"
+          #- name: SPRING_DATA_MONGODB_PASSWORD
+          #value: "admin"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: microservice-app
+  name: microservice-app
+spec:
+  ports:
+  - port: 8093
+    protocol: TCP
+    targetPort: 8093
+  selector:
+    app: microservice-app
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: microservice
+  name: microservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: microservice
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: microservice
+    spec:
+      containers:
+      - image: pramodgautam145/microservice
+        name: microservice
+        env:
+        - name: myapp.baseUrl
+          value: 'microservice-app.default.svc.cluster.local:8093'
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: microservice
+  name: microservice
+spec:
+  ports:
+  - port: 8092
+    protocol: TCP
+    targetPort: 8092
+   # nodePort: 30000
+  selector:
+    app: microservice
+  type: LoadBalancer
+---

@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'microservice'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['microservice:8092']  # 'host.docker.internal' refers to the host machine from within a Docker container
+  - job_name: 'microservice-app'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['microservice-app.default.svc.cluster.local:8093']
